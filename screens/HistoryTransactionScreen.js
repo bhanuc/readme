@@ -16,7 +16,6 @@ import { Fetch } from 'react-request';
 
 const HistoryTransactionScreen = props => {
   const dimensions = useWindowDimensions();
-
   const { theme } = props;
 
   return (
@@ -312,7 +311,7 @@ const HistoryTransactionScreen = props => {
         )}
       >
         {/* Home */}
-        <Touchable activeOpacity={0.8} disabledOpacity={0.8}>
+        <Touchable activeOpacity={0.8} disabledOpacity={0.8} onPress={() => props.navigation.navigate('ProfileScreen')}>
           <View
             style={StyleSheet.applyWidth(
               {
@@ -332,7 +331,7 @@ const HistoryTransactionScreen = props => {
           </View>
         </Touchable>
         {/* History Transaction */}
-        <Touchable activeOpacity={0.8} disabledOpacity={0.8}>
+        <Touchable activeOpacity={0.8} disabledOpacity={0.8}  onPress={() => props.navigation.navigate('VideoCallStartScreen')}>
           <View
             style={StyleSheet.applyWidth(
               {
@@ -352,7 +351,7 @@ const HistoryTransactionScreen = props => {
           </View>
         </Touchable>
         {/* Messages */}
-        <Touchable activeOpacity={0.8} disabledOpacity={0.8}>
+        <Touchable activeOpacity={0.8} disabledOpacity={0.8}  onPress={() => props.navigation.navigate('VideoCallStartScreen')}>
           <View
             style={StyleSheet.applyWidth(
               {
@@ -372,7 +371,7 @@ const HistoryTransactionScreen = props => {
           </View>
         </Touchable>
         {/* Profile */}
-        <Touchable disabledOpacity={0.8} activeOpacity={0.8}>
+        <Touchable disabledOpacity={0.8} activeOpacity={0.8}  onPress={() => props.navigation.navigate('HomeCopyScreen')}>
           <View
             style={StyleSheet.applyWidth(
               {

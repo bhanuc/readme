@@ -2,7 +2,7 @@
   "expo": {
     "name": "read",
     "slug": "read",
-    "scheme": "untitled-app",
+    "scheme": "reader-app",
     "description": "Xano Authentication Starter App - includes Login, Registration, and Home screens",
     "privacy": "unlisted",
     "platforms": [
@@ -22,16 +22,22 @@
       "**/*"
     ],
     "ios": {
-      "bundleIdentifier": "com.draftbit.untitledapp",
+      "bundleIdentifier": "io.bhanu.read",
       "supportsTablet": null,
       "buildNumber": "1.0.0",
-      "infoPlist": {},
+      "infoPlist": {
+        "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your Camera.",
+        "NSMicrophoneUsageDescription": "$(PRODUCT_NAME) needs access to your Microphone."
+      },
       "usesIcloudStorage": false
     },
     "android": {
       "versionCode": 1,
-      "package": "com.draftbit.untitledapp",
-      "permissions": []
+      "package": "io.bhanu.read",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "display": null,
@@ -43,6 +49,12 @@
     },
     "notification": {
       "androidMode": "default"
+    },
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "cbf1ec88-2ad1-4578-b198-edd2543c7dd8"
+      }
     }
   }
 }
