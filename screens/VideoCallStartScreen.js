@@ -1,7 +1,10 @@
 import React from 'react';
 import Images from '../config/Images';
+import { StatusBar } from 'expo-status-bar'
 import Breakpoints from '../utils/Breakpoints';
 import * as StyleSheet from '../utils/StyleSheet';
+import { Camera } from 'expo-camera'
+import { ImageEditor } from "expo-image-editor";
 import {
   Circle,
   Icon,
@@ -15,18 +18,188 @@ import {
   Text,
   View,
   useWindowDimensions,
+  TouchableOpacity
 } from 'react-native';
+import { useEffect , useState} from 'react';
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
+})
+
+const CameraPreview = ({ photo, retakePicture, savePhoto }) => {
+  console.log('sdsfds', photo)
+  return (
+    <View
+      style={{
+        backgroundColor: 'transparent',
+        flex: 1,
+        width: '100%',
+        height: '100%'
+      }}
+    >
+      <ImageEditor
+        visible={true}
+        onCloseEditor={() => setEditorVisible(false)}
+        imageUri={photo && photo.uri }
+        fixedCropAspectRatio={16 / 9}
+        lockAspectRatio={true}
+        minimumCropDimensions={{
+          width: 100,
+          height: 100,
+        }}
+        onEditingComplete={(result) => {
+          setImageData(result);
+        }}
+        mode="full"
+      />
+      {/* <ImageBackground
+        source={{ uri: photo && photo.uri }}
+        style={{
+          flex: 1
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'column',
+            padding: 15,
+            justifyContent: 'flex-end'
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between'
+            }}
+          >
+            <TouchableOpacity
+              onPress={retakePicture}
+              style={{
+                width: 130,
+                height: 40,
+
+                alignItems: 'center',
+                borderRadius: 4
+              }}
+            >
+              <Text
+                style={{
+                  color: '#fff',
+                  fontSize: 20
+                }}
+              >
+                Re-take
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={savePhoto}
+              style={{
+                width: 130,
+                height: 40,
+
+                alignItems: 'center',
+                borderRadius: 4
+              }}
+            >
+              <Text
+                style={{
+                  color: '#fff',
+                  fontSize: 20
+                }}
+              >
+                save photo
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ImageBackground> */}
+    </View>
+  )
+}
 
 const VideoCallStartScreen = props => {
   const dimensions = useWindowDimensions();
-
+  let camera = null;
   const { theme } = props;
   const { navigation } = props;
+  const [imageUri, setImageUri] = useState(undefined);
 
-  const [Ongoing, setOngoing] = React.useState(false);
-  const [Ringing, setRinging] = React.useState(true);
-  const [mute, setMute] = React.useState(false);
-  const [speaker, setSpeaker] = React.useState(false);
+  const [editorVisible, setEditorVisible] = useState(false);
+
+  const [startCamera, setStartCamera] = React.useState(false)
+  const [previewVisible, setPreviewVisible] = React.useState(false)
+  const [capturedImage, setCapturedImage] = React.useState(null)
+  const [cameraType, setCameraType] = React.useState(Camera.Constants.Type.back)
+  const [flashMode, setFlashMode] = React.useState('off')
+  const __startCamera = async () => {
+    const { status } = await Camera.requestPermissionsAsync()
+    console.log(status)
+    if (status === 'granted') {
+      setStartCamera(true)
+    } else {
+      Alert.alert('Access denied')
+    }
+  }
+  const __takePicture = async () => {
+    const photo = await camera.takePictureAsync()
+    console.log(photo)
+    setPreviewVisible(true)
+    //setStartCamera(false)
+    setCapturedImage(photo)
+  }
+  const __savePhoto = () => { }
+  const __retakePicture = () => {
+    setCapturedImage(null)
+    setPreviewVisible(false)
+    __startCamera()
+  }
+  const __handleFlashMode = () => {
+    if (flashMode === 'on') {
+      setFlashMode('off')
+    } else if (flashMode === 'off') {
+      setFlashMode('on')
+    } else {
+      setFlashMode('auto')
+    }
+  }
+  const __switchCamera = () => {
+    if (cameraType === 'back') {
+      setCameraType('front')
+    } else {
+      setCameraType('back')
+    }
+  }
+
+  
+  useEffect(() => {
+    __startCamera();
+  }, [])
+
+  // const CameraPreview = ({ photo }) => {
+  //   console.log('sdsfds', photo)
+  //   return (
+  //     <View
+  //       style={{
+  //         backgroundColor: 'transparent',
+  //         flex: 1,
+  //         width: '100%',
+  //         height: '100%'
+  //       }}
+  //     >
+  //       <ImageBackground
+  //         source={{ uri: photo && photo.uri }}
+  //         style={{
+  //           flex: 1
+  //         }}
+  //       />
+  //     </View>
+  //   )
+  // }
 
   return (
     <ScreenContainer
@@ -34,453 +207,147 @@ const VideoCallStartScreen = props => {
       scrollable={false}
       hasTopSafeArea={false}
     >
-      {/* Ringing */}
-      <>
-        {!Ringing ? null : (
-          <ImageBackground
-            style={StyleSheet.applyWidth(
-              { height: '100%', justifyContent: 'flex-end', width: '100%' },
-              dimensions.width
-            )}
-            resizeMode={'cover'}
-            source={Images.Rectangle}
+      <View style={styles.container}>
+        {startCamera ? (
+          <View
+            style={{
+              flex: 1,
+              width: '100%'
+            }}
           >
-            {/* Ringing */}
-            <View
-              style={StyleSheet.applyWidth({ flex: 0.4 }, dimensions.width)}
-            >
-              <View
-                style={StyleSheet.applyWidth(
-                  { alignItems: 'center', flex: 1 },
-                  dimensions.width
-                )}
+            {previewVisible && capturedImage ? (
+              <CameraPreview photo={capturedImage} savePhoto={__savePhoto} retakePicture={__retakePicture} />
+            ) : (
+              <Camera
+                type={cameraType}
+                flashMode={flashMode}
+                style={{ flex: 1 }}
+                ref={(r) => {
+                  camera = r
+                }}
               >
-                {/* Name */}
-                <Text
-                  style={StyleSheet.applyWidth(
-                    {
-                      color: theme.colors['Custom Color_4'],
-                      fontFamily: 'Poppins_600SemiBold',
-                      fontSize: 22,
-                    },
-                    dimensions.width
-                  )}
-                >
-                  {'Kyara Moana'}
-                </Text>
-                {/* Video Call */}
-                <Text
-                  style={StyleSheet.applyWidth(
-                    {
-                      color: theme.colors['Custom Color_4'],
-                      fontFamily: 'Poppins_400Regular',
-                      fontSize: 15,
-                      marginTop: 6,
-                    },
-                    dimensions.width
-                  )}
-                >
-                  {'Video Call'}
-                </Text>
-              </View>
-              {/* Clicks */}
-              <View
-                style={StyleSheet.applyWidth(
-                  {
+                <View
+                  style={{
                     flex: 1,
-                    flexDirection: 'row',
-                    justifyContent: 'space-around',
-                  },
-                  dimensions.width
-                )}
-              >
-                {/* Decline */}
-                <Touchable
-                  onPress={() => {
-                    try {
-                      navigation.goBack();
-                    } catch (err) {
-                      console.error(err);
-                    }
+                    width: '100%',
+                    backgroundColor: 'transparent',
+                    flexDirection: 'row'
                   }}
                 >
                   <View
-                    style={StyleSheet.applyWidth(
-                      {
-                        alignItems: 'center',
-                        height: 83,
-                        paddingLeft: 2,
-                        paddingRight: 2,
-                      },
-                      dimensions.width
-                    )}
+                    style={{
+                      position: 'absolute',
+                      left: '5%',
+                      top: '10%',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between'
+                    }}
                   >
-                    <Circle size={50} bgColor={theme.colors['Custom Color_5']}>
-                      <Icon
-                        size={24}
-                        color={theme.colors['Custom Color_4']}
-                        name={'MaterialIcons/call-end'}
-                      />
-                    </Circle>
-
-                    <Text
-                      style={StyleSheet.applyWidth(
-                        {
-                          color: theme.colors['Custom Color_4'],
-                          fontFamily: 'Poppins_400Regular',
-                          fontSize: 13,
-                          marginTop: 8,
-                          textAlign: 'center',
-                        },
-                        dimensions.width
-                      )}
+                    <TouchableOpacity
+                      onPress={__handleFlashMode}
+                      style={{
+                        backgroundColor: flashMode === 'off' ? '#000' : '#fff',
+                        borderRadius: 50,
+                        height: 25,
+                        width: 25
+                      }}
                     >
-                      {'Decline'}
-                    </Text>
+                      <Text
+                        style={{
+                          fontSize: 20
+                        }}
+                      >
+                        ⚡️
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={__switchCamera}
+                      style={{
+                        marginTop: 20,
+                        borderRadius: 50,
+                        height: 25,
+                        width: 25
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 20
+                        }}
+                      >
+                        {cameraType === 'front' ? '🤳' : '📷'}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                </Touchable>
-                {/* Accept */}
-                <Touchable
-                  onPress={() => {
-                    try {
-                      setOngoing(true);
-                      setRinging(false);
-                    } catch (err) {
-                      console.error(err);
-                    }
-                  }}
-                >
                   <View
-                    style={StyleSheet.applyWidth(
-                      {
-                        alignItems: 'center',
-                        height: 83,
-                        paddingLeft: 2,
-                        paddingRight: 2,
-                      },
-                      dimensions.width
-                    )}
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      flexDirection: 'row',
+                      flex: 1,
+                      width: '100%',
+                      padding: 20,
+                      justifyContent: 'space-between'
+                    }}
                   >
-                    <Circle size={50} bgColor={theme.colors['Custom Color_12']}>
-                      <Icon
-                        size={24}
-                        color={theme.colors['Custom Color_4']}
-                        name={'MaterialIcons/video-call'}
-                      />
-                    </Circle>
-
-                    <Text
-                      style={StyleSheet.applyWidth(
-                        {
-                          color: theme.colors['Custom Color_4'],
-                          fontFamily: 'Poppins_400Regular',
-                          fontSize: 13,
-                          marginTop: 8,
-                          textAlign: 'center',
-                        },
-                        dimensions.width
-                      )}
+                    <View
+                      style={{
+                        alignSelf: 'center',
+                        flex: 1,
+                        alignItems: 'center'
+                      }}
                     >
-                      {'Accept'}
-                    </Text>
+                      <TouchableOpacity
+                        onPress={__takePicture}
+                        style={{
+                          width: 70,
+                          height: 70,
+                          bottom: 0,
+                          borderRadius: 50,
+                          backgroundColor: '#fff'
+                        }}
+                      />
+                    </View>
                   </View>
-                </Touchable>
-              </View>
-            </View>
-          </ImageBackground>
-        )}
-      </>
-      {/* Ongoing */}
-      <>
-        {!Ongoing ? null : (
-          <ImageBackground
-            style={StyleSheet.applyWidth(
-              { height: '100%', justifyContent: 'flex-end', width: '100%' },
-              dimensions.width
+                </View>
+              </Camera>
             )}
-            resizeMode={'cover'}
-            source={Images.User}
+          </View>
+        ) : (
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: '#fff',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
           >
-            {/* Ongoing */}
-            <View
-              style={StyleSheet.applyWidth({ flex: 0.4 }, dimensions.width)}
+            <TouchableOpacity
+              onPress={__startCamera}
+              style={{
+                width: 130,
+                borderRadius: 4,
+                backgroundColor: '#14274e',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: 40
+              }}
             >
-              <View
-                style={StyleSheet.applyWidth(
-                  { alignItems: 'flex-end', flex: 1, paddingRight: 30 },
-                  dimensions.width
-                )}
+              <Text
+                style={{
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  textAlign: 'center'
+                }}
               >
-                <Image
-                  style={StyleSheet.applyWidth(
-                    { borderRadius: 5, height: 120, width: 90 },
-                    dimensions.width
-                  )}
-                  resizeMode={'cover'}
-                  source={Images.Rectangle}
-                />
-              </View>
-              {/* Clicks */}
-              <View
-                style={StyleSheet.applyWidth(
-                  {
-                    flex: 0.75,
-                    flexDirection: 'row',
-                    justifyContent: 'space-around',
-                  },
-                  dimensions.width
-                )}
-              >
-                {/* Mute */}
-                <View>
-                  {/* disabled */}
-                  <>
-                    {mute ? null : (
-                      <Touchable
-                        onPress={() => {
-                          try {
-                            setMute(true);
-                          } catch (err) {
-                            console.error(err);
-                          }
-                        }}
-                      >
-                        <View
-                          style={StyleSheet.applyWidth(
-                            {
-                              alignItems: 'center',
-                              height: 83,
-                              paddingLeft: 2,
-                              paddingRight: 2,
-                            },
-                            dimensions.width
-                          )}
-                        >
-                          <Circle size={50} bgColor={theme.colors['BG Gray']}>
-                            <Icon
-                              size={24}
-                              color={theme.colors['Custom Color_4']}
-                              name={'Ionicons/mic-sharp'}
-                            />
-                          </Circle>
-
-                          <Text
-                            style={StyleSheet.applyWidth(
-                              {
-                                color: theme.colors['Custom Color_4'],
-                                fontFamily: 'Poppins_400Regular',
-                                fontSize: 13,
-                                marginTop: 8,
-                              },
-                              dimensions.width
-                            )}
-                          >
-                            {'Mute'}
-                          </Text>
-                        </View>
-                      </Touchable>
-                    )}
-                  </>
-                  {/* Enabled */}
-                  <>
-                    {!mute ? null : (
-                      <Touchable
-                        onPress={() => {
-                          try {
-                            setMute(false);
-                          } catch (err) {
-                            console.error(err);
-                          }
-                        }}
-                      >
-                        <View
-                          style={StyleSheet.applyWidth(
-                            {
-                              alignItems: 'center',
-                              height: 83,
-                              paddingLeft: 2,
-                              paddingRight: 2,
-                            },
-                            dimensions.width
-                          )}
-                        >
-                          <Circle size={50} bgColor={theme.colors['Light']}>
-                            <Icon
-                              size={24}
-                              color={theme.colors['Custom Color_4']}
-                              name={'Ionicons/mic-sharp'}
-                            />
-                          </Circle>
-
-                          <Text
-                            style={StyleSheet.applyWidth(
-                              {
-                                color: theme.colors['Custom Color_4'],
-                                fontFamily: 'Poppins_400Regular',
-                                fontSize: 13,
-                                marginTop: 8,
-                              },
-                              dimensions.width
-                            )}
-                          >
-                            {'Mute'}
-                          </Text>
-                        </View>
-                      </Touchable>
-                    )}
-                  </>
-                </View>
-                {/* End Call */}
-                <Touchable
-                  onPress={() => {
-                    try {
-                      navigation.goBack();
-                    } catch (err) {
-                      console.error(err);
-                    }
-                  }}
-                >
-                  <View
-                    style={StyleSheet.applyWidth(
-                      {
-                        alignItems: 'center',
-                        height: 83,
-                        paddingLeft: 2,
-                        paddingRight: 2,
-                      },
-                      dimensions.width
-                    )}
-                  >
-                    <Circle size={50} bgColor={theme.colors['Custom Color_5']}>
-                      <Icon
-                        size={24}
-                        color={theme.colors['Custom Color_4']}
-                        name={'MaterialIcons/call-end'}
-                      />
-                    </Circle>
-
-                    <Text
-                      style={StyleSheet.applyWidth(
-                        {
-                          color: theme.colors['Custom Color_4'],
-                          fontFamily: 'Poppins_400Regular',
-                          fontSize: 13,
-                          marginTop: 8,
-                          textAlign: 'center',
-                        },
-                        dimensions.width
-                      )}
-                    >
-                      {'Decline'}
-                    </Text>
-                  </View>
-                </Touchable>
-                {/* Speaker */}
-                <View>
-                  {/* Disabled */}
-                  <>
-                    {speaker ? null : (
-                      <Touchable
-                        onPress={() => {
-                          try {
-                            setSpeaker(true);
-                          } catch (err) {
-                            console.error(err);
-                          }
-                        }}
-                      >
-                        <View
-                          style={StyleSheet.applyWidth(
-                            {
-                              alignItems: 'center',
-                              height: 83,
-                              paddingLeft: 2,
-                              paddingRight: 2,
-                            },
-                            dimensions.width
-                          )}
-                        >
-                          <Circle size={50} bgColor={theme.colors['BG Gray']}>
-                            <Icon
-                              size={24}
-                              color={theme.colors['Custom Color_4']}
-                              name={'Ionicons/volume-high'}
-                            />
-                          </Circle>
-
-                          <Text
-                            style={StyleSheet.applyWidth(
-                              {
-                                color: theme.colors['Custom Color_4'],
-                                fontFamily: 'Poppins_400Regular',
-                                fontSize: 13,
-                                marginTop: 8,
-                                textAlign: 'center',
-                              },
-                              dimensions.width
-                            )}
-                          >
-                            {'Volume'}
-                          </Text>
-                        </View>
-                      </Touchable>
-                    )}
-                  </>
-                  {/* Enabled */}
-                  <>
-                    {!speaker ? null : (
-                      <Touchable
-                        onPress={() => {
-                          try {
-                            setSpeaker(false);
-                          } catch (err) {
-                            console.error(err);
-                          }
-                        }}
-                      >
-                        <View
-                          style={StyleSheet.applyWidth(
-                            {
-                              alignItems: 'center',
-                              height: 83,
-                              paddingLeft: 2,
-                              paddingRight: 2,
-                            },
-                            dimensions.width
-                          )}
-                        >
-                          <Circle size={50} bgColor={theme.colors['Light']}>
-                            <Icon
-                              size={24}
-                              color={theme.colors['Custom Color_4']}
-                              name={'Ionicons/volume-high'}
-                            />
-                          </Circle>
-
-                          <Text
-                            style={StyleSheet.applyWidth(
-                              {
-                                color: theme.colors['Custom Color_4'],
-                                fontFamily: 'Poppins_400Regular',
-                                fontSize: 13,
-                                marginTop: 8,
-                                textAlign: 'center',
-                              },
-                              dimensions.width
-                            )}
-                          >
-                            {'Volume'}
-                          </Text>
-                        </View>
-                      </Touchable>
-                    )}
-                  </>
-                </View>
-              </View>
-            </View>
-          </ImageBackground>
+                Take picture
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
-      </>
+
+        <StatusBar style="auto" />
+      </View>
     </ScreenContainer>
   );
 };

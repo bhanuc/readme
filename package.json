@@ -43,6 +43,9 @@
     "expo-document-picker": "~11.0.1",
     "expo-file-system": "~15.1.1",
     "expo-font": "~11.0.1",
+    "expo-gl": "~12.0.1",
+    "expo-image-editor": "^1.7.1",
+    "expo-image-manipulator": "~11.0.0",
     "expo-image-picker": "~14.0.2",
     "expo-linear-gradient": "~12.0.1",
     "expo-linking": "~3.3.1",
@@ -52,6 +55,7 @@
     "expo-screen-orientation": "~5.0.1",
     "expo-sharing": "~11.0.1",
     "expo-splash-screen": "~0.17.5",
+    "expo-status-bar": "^1.4.4",
     "expo-system-ui": "~2.0.1",
     "expo-web-browser": "~12.0.0",
     "react": "18.1.0",
@@ -72,7 +76,8 @@
     "react-native-web-swiper": "^2.2.3",
     "react-native-webview": "11.23.1",
     "react-query": "^3.39.2",
-    "react-request": "3.2.0"
+    "react-request": "3.2.0",
+    "recoil": "^0.7.7"
   },
   "resolutions": {
     "react-native-web": "0.18.7"
