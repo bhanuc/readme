@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "read",
+    "slug": "read",
+    "scheme": "untitled-app",
+    "description": "Xano Authentication Starter App - includes Login, Registration, and Home screens",
+    "privacy": "unlisted",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/app/icon.png",
+    "splash": {
+      "image": "./assets/app/splash.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#1B1B40"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.draftbit.untitledapp",
+      "supportsTablet": null,
+      "buildNumber": "1.0.0",
+      "infoPlist": {},
+      "usesIcloudStorage": false
+    },
+    "android": {
+      "versionCode": 1,
+      "package": "com.draftbit.untitledapp",
+      "permissions": []
+    },
+    "web": {
+      "display": null,
+      "barStyle": null,
+      "themeColor": "#000000",
+      "orientation": null,
+      "backgroundColor": null,
+      "preferRelatedApplications": null
+    },
+    "notification": {
+      "androidMode": "default"
+    }
+  }
+}
