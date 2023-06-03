@@ -21,6 +21,8 @@ import {
   TouchableOpacity
 } from 'react-native';
 import { useEffect, useState } from 'react';
+import Tts from 'react-native-tts';
+
 import useLayout from '../useLayout';
 
 const styles = StyleSheet.create({
@@ -33,9 +35,14 @@ const styles = StyleSheet.create({
 })
 
 const BoundingBoxImage = ({ source, boxes, onImageLayout, imgSize, imgLayout, dimensions }) => {
-  console.log(dimensions, "dimensions");
   const heightRatio = dimensions.height / imgSize.height;
   const widthRatio = dimensions.width / imgSize.width;
+  const playTexts = () => {
+    const text = boxes.map((box) => box.text).join('');
+    Tts.getInitStatus().then(() => {
+      Tts.speak(text);
+    });
+  }
   return (
     <View style={{
       backgroundColor: 'white',
@@ -54,7 +61,6 @@ const BoundingBoxImage = ({ source, boxes, onImageLayout, imgSize, imgLayout, di
       {/* <Image source={source} style={{ width: '100%', height: '100%' }} /> */}
 
       {boxes && boxes.map((box, index) => {
-        console.log(box.bounding, heightRatio, widthRatio);
         return <View
           key={index}
           style={{
@@ -80,7 +86,7 @@ const BoundingBoxImage = ({ source, boxes, onImageLayout, imgSize, imgLayout, di
           bottom: 50,
         }}
       >
-        <Touchable activeOpacity={0.8} disabledOpacity={0.8} onPress={() => props.navigation.navigate('ProfileScreen')}>
+        <Touchable activeOpacity={0.8} disabledOpacity={0.8} onPress={() => playTexts()}>
           <View
             style={StyleSheet.applyWidth(
               {
