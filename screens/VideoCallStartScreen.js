@@ -5,6 +5,7 @@ import Breakpoints from '../utils/Breakpoints';
 import * as StyleSheet from '../utils/StyleSheet';
 import { Camera } from 'expo-camera'
 import { ImageEditor } from "expo-image-editor";
+import MlkitOcr from 'react-native-mlkit-ocr';
 import {
   Circle,
   Icon,
@@ -34,7 +35,7 @@ const styles = StyleSheet.create({
 const CameraPreview = ({ photo, retakePicture, savePhoto }) => {
   console.log('sdsfds', photo)
   return (
-    <View
+  <View
       style={{
         backgroundColor: 'transparent',
         flex: 1,
@@ -44,7 +45,14 @@ const CameraPreview = ({ photo, retakePicture, savePhoto }) => {
     >
       <ImageEditor
         visible={true}
-        onCloseEditor={() => setEditorVisible(false)}
+        onCloseEditor={async (result) => {
+          console.log("onCloseEditor");
+          console.log(result);
+          // const resultFromFile = await MlkitOcr.detectFromFile(result.uri);
+          // console.log(result);
+          // console.log(resultFromFile);
+          // setImageData(result);
+        }}
         imageUri={photo && photo.uri }
         fixedCropAspectRatio={16 / 9}
         lockAspectRatio={true}
@@ -52,8 +60,15 @@ const CameraPreview = ({ photo, retakePicture, savePhoto }) => {
           width: 100,
           height: 100,
         }}
-        onEditingComplete={(result) => {
-          setImageData(result);
+        onEditingComplete={ (result) => {
+          console.log("onEditingComplete");
+          console.log(result.uri);
+          const resultFromFile =  MlkitOcr.detectFromFile(result.uri).then((res) => {
+            console.log(res);
+          });
+          console.log(result);
+          console.log(resultFromFile);
+          // setImageData(result);
         }}
         mode="full"
       />

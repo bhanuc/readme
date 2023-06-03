@@ -10485,6 +10485,11 @@ react-native-markdown-display@^7.0.0-alpha.2:
     prop-types "^15.7.2"
     react-native-fit-image "^1.5.5"
 
+react-native-mlkit-ocr@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/react-native-mlkit-ocr/-/react-native-mlkit-ocr-0.3.0.tgz#b5b65dbe1fffdca0ca2012b1cab56cca6ea1bf58"
+  integrity sha512-8oNJwNMGsUup41nWlKA01iW6xiNkCcXM3ANDsOKKijvsrd3eWNs7kL0Yhpt3Cq64zSyjoeqkdTdOCDiI6Pv6KA==
+
 react-native-modal-datetime-picker@^13.0.0:
   version "13.1.2"
   resolved "https://registry.yarnpkg.com/react-native-modal-datetime-picker/-/react-native-modal-datetime-picker-13.1.2.tgz#7c8bd3402acb4dcfbca49c926a7f18dd108c69c4"
