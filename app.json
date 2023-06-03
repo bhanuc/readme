@@ -10,6 +10,7 @@
       "android",
       "web"
     ],
+
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/app/icon.png",
@@ -21,6 +22,7 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "jsEngine": "hermes",
     "ios": {
       "bundleIdentifier": "io.bhanu.read",
       "supportsTablet": null,
@@ -29,7 +31,9 @@
         "NSCameraUsageDescription": "$(PRODUCT_NAME) needs access to your Camera.",
         "NSMicrophoneUsageDescription": "$(PRODUCT_NAME) needs access to your Microphone."
       },
-      "usesIcloudStorage": false
+      "usesIcloudStorage": false,
+      "jsEngine": "jsc"
+
     },
     "android": {
       "versionCode": 1,

@@ -1,5 +1,4 @@
 import React from 'react';
-import Images from '../config/Images';
 import { StatusBar } from 'expo-status-bar'
 import Breakpoints from '../utils/Breakpoints';
 import * as StyleSheet from '../utils/StyleSheet';
@@ -21,7 +20,8 @@ import {
   useWindowDimensions,
   TouchableOpacity
 } from 'react-native';
-import { useEffect , useState} from 'react';
+import { useEffect, useState } from 'react';
+import useLayout from '../useLayout';
 
 const styles = StyleSheet.create({
   container: {
@@ -32,10 +32,81 @@ const styles = StyleSheet.create({
   }
 })
 
-const CameraPreview = ({ photo, retakePicture, savePhoto }) => {
-  console.log('sdsfds', photo)
+const BoundingBoxImage = ({ source, boxes, onImageLayout, imgSize, imgLayout, dimensions }) => {
+  console.log(dimensions, "dimensions");
+  const heightRatio = dimensions.height / imgSize.height;
+  const widthRatio = dimensions.width / imgSize.width;
   return (
-  <View
+    <View style={{
+      backgroundColor: 'white',
+      flex: 1,
+      width: '100%',
+      height: '100%'
+    }}>
+      {/* <ImageBackground
+      resizeMode="contain"
+        source={{ uri: source }}
+        style={{
+          flex: 1
+        }}
+        onLayout={onImageLayout}
+      > */}
+      {/* <Image source={source} style={{ width: '100%', height: '100%' }} /> */}
+
+      {boxes && boxes.map((box, index) => {
+        console.log(box.bounding, heightRatio, widthRatio);
+        return <View
+          key={index}
+          style={{
+            borderWidth: 2,
+            borderColor: 'red',
+            position: 'absolute',
+            top: box.bounding.top * heightRatio,
+            left: box.bounding.left * widthRatio,
+            width: box.bounding.width * widthRatio,
+            height: box.bounding.height * heightRatio,
+          }}
+        >
+          <Text>{box.text}</Text>
+        </View>
+      })}
+      {/* </ImageBackground> */}
+      <View
+        style={{
+          alignSelf: 'center',
+          flex: 1,
+          alignItems: 'center',
+          position: 'absolute',
+          bottom: 50,
+        }}
+      >
+        <Touchable activeOpacity={0.8} disabledOpacity={0.8} onPress={() => props.navigation.navigate('ProfileScreen')}>
+          <View
+            style={StyleSheet.applyWidth(
+              {
+                alignItems: 'center',
+                height: 48,
+                justifyContent: 'center',
+                width: 48,
+              },
+              dimensions.width
+            )}
+          >
+            <Icon
+              size={24}
+              name={'AntDesign/play'}
+    
+            />
+          </View>
+        </Touchable>
+      </View>
+    </View>
+  );
+};
+
+const CameraPreview = ({ photo, retakePicture, savePhoto, showResults }) => {
+  return (
+    <View
       style={{
         backgroundColor: 'transparent',
         flex: 1,
@@ -47,27 +118,30 @@ const CameraPreview = ({ photo, retakePicture, savePhoto }) => {
         visible={true}
         onCloseEditor={async (result) => {
           console.log("onCloseEditor");
-          console.log(result);
           // const resultFromFile = await MlkitOcr.detectFromFile(result.uri);
           // console.log(result);
           // console.log(resultFromFile);
           // setImageData(result);
         }}
-        imageUri={photo && photo.uri }
+        imageUri={photo && photo.uri}
         fixedCropAspectRatio={16 / 9}
         lockAspectRatio={true}
         minimumCropDimensions={{
           width: 100,
           height: 100,
         }}
-        onEditingComplete={ (result) => {
+        onEditingComplete={(result) => {
           console.log("onEditingComplete");
           console.log(result.uri);
-          const resultFromFile =  MlkitOcr.detectFromFile(result.uri).then((res) => {
-            console.log(res);
+          Image.getSize(result.uri, (width, height) => {
+            MlkitOcr.detectFromFile(result.uri).then((res) => {
+              showResults(res, result.uri, { height, width });
+            });
           });
-          console.log(result);
-          console.log(resultFromFile);
+
+
+          // console.log(result);
+          // console.log(resultFromFile);
           // setImageData(result);
         }}
         mode="full"
@@ -142,18 +216,34 @@ const VideoCallStartScreen = props => {
   let camera = null;
   const { theme } = props;
   const { navigation } = props;
-  const [imageUri, setImageUri] = useState(undefined);
+  const [resultBoxes, setResultBoxes] = useState([]);
+  const [resultSrc, setResultSrc] = useState("");
+  const [imgLayout, onImageLayout] = useLayout();
+  const [imgSize, setImageSize] = useState({ width: 0, height: 0 });
 
-  const [editorVisible, setEditorVisible] = useState(false);
+  const [resultVisible, setResultVisible] = useState(false);
 
-  const [startCamera, setStartCamera] = React.useState(false)
-  const [previewVisible, setPreviewVisible] = React.useState(false)
-  const [capturedImage, setCapturedImage] = React.useState(null)
-  const [cameraType, setCameraType] = React.useState(Camera.Constants.Type.back)
-  const [flashMode, setFlashMode] = React.useState('off')
+  const [startCamera, setStartCamera] = React.useState(false);
+  const [previewVisible, setPreviewVisible] = React.useState(false);
+  const [capturedImage, setCapturedImage] = React.useState(null);
+  const [cameraType, setCameraType] = React.useState(Camera.Constants.Type.back);
+  const [flashMode, setFlashMode] = React.useState('off');
+
+
+  const isHermes = () => !!global.HermesInternal;
+  console.log("isHermes", isHermes());
+
+  const __showResults = async (result, source, { height, width }) => {
+    setImageSize({ height, width });
+    setResultBoxes(result);
+    setResultSrc(source);
+    setResultVisible(true);
+
+    setStartCamera(false);
+  }
+
   const __startCamera = async () => {
     const { status } = await Camera.requestPermissionsAsync()
-    console.log(status)
     if (status === 'granted') {
       setStartCamera(true)
     } else {
@@ -190,31 +280,43 @@ const VideoCallStartScreen = props => {
     }
   }
 
-  
+
   useEffect(() => {
     __startCamera();
   }, [])
 
-  // const CameraPreview = ({ photo }) => {
-  //   console.log('sdsfds', photo)
-  //   return (
-  //     <View
-  //       style={{
-  //         backgroundColor: 'transparent',
-  //         flex: 1,
-  //         width: '100%',
-  //         height: '100%'
-  //       }}
-  //     >
-  //       <ImageBackground
-  //         source={{ uri: photo && photo.uri }}
-  //         style={{
-  //           flex: 1
-  //         }}
-  //       />
-  //     </View>
-  //   )
-  // }
+  React.useEffect(() => {
+    console.log("resultVisible", resultVisible);
+    console.log("imgLayout", imgLayout);
+    // if (!imgDimensions.width || !imgDimensions.height) {
+    //   console.log('Image dimensions not loaded yet');
+    // } else {
+    //   const { width: originalWidth, height: originalHeight } = imgDimensions;
+    //   console.log(imgDimensions);
+    //   const { width: containerWidth, height: containerHeight } = imgLayout;
+    //   const imgAspectRatio = originalWidth / originalHeight;
+    //   // find image dimension closest to container dimension
+    //   const widthDiff = Math.abs(originalWidth - containerWidth);
+    //   const heightDiff = Math.abs(originalHeight - containerHeight);
+    //   let imgWidth, imgHeight;
+    //   // if width is closest then  scale imgHeight to containerWidth
+    //   if (widthDiff < heightDiff) {
+    //     imgWidth = containerWidth;
+    //     imgHeight = imgWidth * imgAspectRatio;
+    //   }
+    //   // if height is closest scale imgWidth to containerWidth
+    //   else {
+    //     imgHeight = containerHeight;
+    //     imgWidth = imgHeight * imgAspectRatio;
+    //   }
+    //   setBoundingBox({
+    //     x: imgLayout.left || imgLayout.x,
+    //     y: imgLayout.top || imgLayout.y,
+    //     width: imgWidth,
+    //     height: imgHeight,
+    //   });
+    // }
+  }, [imgLayout]);
 
   return (
     <ScreenContainer
@@ -223,7 +325,7 @@ const VideoCallStartScreen = props => {
       hasTopSafeArea={false}
     >
       <View style={styles.container}>
-        {startCamera ? (
+        {startCamera && (
           <View
             style={{
               flex: 1,
@@ -231,7 +333,7 @@ const VideoCallStartScreen = props => {
             }}
           >
             {previewVisible && capturedImage ? (
-              <CameraPreview photo={capturedImage} savePhoto={__savePhoto} retakePicture={__retakePicture} />
+              <CameraPreview photo={capturedImage} savePhoto={__savePhoto} retakePicture={__retakePicture} showResults={__showResults} />
             ) : (
               <Camera
                 type={cameraType}
@@ -327,7 +429,8 @@ const VideoCallStartScreen = props => {
               </Camera>
             )}
           </View>
-        ) : (
+        )}
+        {!startCamera && !resultVisible && (
           <View
             style={{
               flex: 1,
@@ -359,6 +462,18 @@ const VideoCallStartScreen = props => {
               </Text>
             </TouchableOpacity>
           </View>
+        )}
+
+        {resultVisible && (
+
+          <BoundingBoxImage
+            source={resultSrc}
+            boxes={resultBoxes}
+            imgSize={imgSize}
+            imgLayout={imgLayout}
+            onImageLayout={onImageLayout}
+            dimensions={dimensions}
+          />
         )}
 
         <StatusBar style="auto" />
